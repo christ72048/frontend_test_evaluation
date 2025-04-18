@@ -1,20 +1,55 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Auth } from "../api/api";
 
-export function RegisterForm () {
+export function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
+    setError("");
+
+    // Vérification des mots de passe
+    if (password !== passwordConfirmation) {
       setError("Les mots de passe ne correspondent pas.");
       return;
     }
-    setError("");
-    console.log("Nom:", name, "Email:", email, "Password:", password);
+
+    setLoading(true);
+
+    try {
+      await Auth.register({
+        name,
+        email,
+        password,
+        password_confirmation: passwordConfirmation
+      });
+      
+      // On connecte directement l'utilisateur après l'inscription
+      await Auth.login({ email, password });
+      
+      // Redirection vers la page d'accueil
+      navigate("/");
+    } catch (error) {
+      console.error("Erreur d'inscription:", error);
+      if (error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else if (error.response && error.response.data && error.response.data.errors) {
+        // Si laravel renvoie des erreurs de validation
+        const validationErrors = Object.values(error.response.data.errors).flat();
+        setError(validationErrors.join(" "));
+      } else {
+        setError("Une erreur est survenue lors de l'inscription.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,6 +58,13 @@ export function RegisterForm () {
         <div className="col-md-6">
           <div className="card p-4 shadow-sm">
             <h3 className="text-center mb-4">Inscription</h3>
+            
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label className="form-label">Nom</label>
@@ -31,6 +73,7 @@ export function RegisterForm () {
                   className="form-control"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -41,6 +84,7 @@ export function RegisterForm () {
                   className="form-control"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -51,6 +95,7 @@ export function RegisterForm () {
                   className="form-control"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -59,14 +104,18 @@ export function RegisterForm () {
                 <input
                   type="password"
                   className="form-control"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  disabled={loading}
                   required
                 />
               </div>
-              {error && <p className="text-danger">{error}</p>}
-              <button type="submit" className="btn btn-primary w-100">
-                S'inscrire
+              <button 
+                type="submit" 
+                className="btn btn-primary w-100"
+                disabled={loading}
+              >
+                {loading ? "Inscription en cours..." : "S'inscrire"}
               </button>
             </form>
           </div>
@@ -74,5 +123,4 @@ export function RegisterForm () {
       </div>
     </div>
   );
-};
-
+}

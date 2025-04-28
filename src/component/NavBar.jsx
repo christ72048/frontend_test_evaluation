@@ -7,18 +7,43 @@ export function NavBar() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
+  // Fonction pour vérifier l'authentification
+  const checkAuth = () => {
+    const authStatus = Auth.isAuthenticated();
+    setIsAuthenticated(authStatus);
+    
+    if (authStatus) {
+      setUser(Auth.getUser());
+    }
+  };
+
   useEffect(() => {
-    // Vérifier si l'utilisateur est authentifié au chargement du composant
-    const checkAuth = () => {
-      const authStatus = Auth.isAuthenticated();
-      setIsAuthenticated(authStatus);
-      
-      if (authStatus) {
-        setUser(Auth.getUser());
-      }
+    // Vérifier l'authentification au chargement initial
+    checkAuth();
+    
+    // Ajouter un écouteur d'événement pour les changements de localStorage
+    const handleStorageChange = () => {
+      checkAuth();
     };
     
-    checkAuth();
+    // Écouter à la fois les événements standard "storage" et notre événement personnalisé "auth-change"
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('auth-change', handleStorageChange);
+    
+    // Vérifier l'authentification toutes les 500ms pendant 2 secondes après le montage
+    // Cette approche assure que les données seront mises à jour même si les événements ne se déclenchent pas
+    const checkInterval = setInterval(checkAuth, 500);
+    const timeout = setTimeout(() => {
+      clearInterval(checkInterval);
+    }, 2000);
+    
+    // Nettoyer les écouteurs d'événements lors du démontage
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth-change', handleStorageChange);
+      clearInterval(checkInterval);
+      clearTimeout(timeout);
+    };
   }, []);
 
   const handleLogout = async () => {

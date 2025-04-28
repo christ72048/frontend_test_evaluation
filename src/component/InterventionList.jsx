@@ -1,7 +1,10 @@
+import axios from 'axios';
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Intervention } from "../api/api";
-
+import { Intervention, Auth } from "../api/api";
+import { FaEye } from 'react-icons/fa';
+import { FaPencil } from "react-icons/fa6";
+import { FaTrash } from "react-icons/fa";
 export default function InterventionList() {
   const [interventions, setInterventions] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -9,17 +12,24 @@ export default function InterventionList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [retryCount, setRetryCount] = useState();
 
   // Fonction pour récupérer les interventions depuis l'API
   async function fetchInterventions(page = 1) {
     try {
       setLoading(true);
-      const response = await Intervention.fetchInterventions(page);
-      console.log (response);
-      if (response && response.data) {
-        setInterventions(response.data);
-        setTotalPages(response.meta.last_page);
-        setCurrentPage(response.meta.current_page);
+      // Utilisez une méthode alternative pour éviter le problème de paramètre dupliqué
+      const url = `http://localhost:8000/api/interventions?page=${page}`;
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (response && response.data && response.data.data) {
+        setInterventions(response.data.data);
+        setTotalPages(response.data.meta.last_page);
+        //setCurrentPage(response.data.meta.current_page);
       } else {
         setInterventions([]);
       }
@@ -31,6 +41,11 @@ export default function InterventionList() {
       setLoading(false);
     }
   }
+
+  // Reset le compteur de tentatives quand la page change
+  useEffect(() => {
+    setRetryCount(0);
+  }, [currentPage]);
 
   // Utilisation du hook useEffect pour appeler fetchInterventions lors du premier rendu
   useEffect(() => {
@@ -71,13 +86,24 @@ export default function InterventionList() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Fonction pour rafraîchir manuellement la liste
+  const handleRefresh = () => {
+    setRetryCount(0);
+    fetchInterventions(currentPage);
+  };
+
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 className="mb-0">Liste des Interventions</h3>
-        <Link to="/add-intervention" className="btn btn-primary">
-          <i className="bi bi-plus"></i> Nouvelle Intervention
-        </Link>
+        <div>
+          <button onClick={handleRefresh} className="btn btn-outline-secondary me-2">
+            <i className="bi bi-arrow-clockwise"></i> Actualiser
+          </button>
+          <Link to="/add-intervention" className="btn btn-primary">
+            <i className="bi bi-plus"></i> Nouvelle Intervention
+          </Link>
+        </div>
       </div>
       
       {successMessage && (
@@ -89,6 +115,12 @@ export default function InterventionList() {
       {error && (
         <div className="alert alert-danger" role="alert">
           {error}
+          <button 
+            className="btn btn-sm btn-outline-danger ms-3" 
+            onClick={handleRefresh}
+          >
+            Réessayer
+          </button>
         </div>
       )}
       
@@ -97,7 +129,7 @@ export default function InterventionList() {
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Chargement...</span>
           </div>
-          <p className="mt-2">Chargement des interventions...</p>
+          <p className="mt-2">Chargement des interventions{retryCount > 0 ? ` (tentative ${retryCount}/3)` : ''}...</p>
         </div>
       ) : (
         <>
@@ -146,21 +178,21 @@ export default function InterventionList() {
                             className="btn btn-outline-info btn-sm me-1"
                             title="Voir les détails"
                           >
-                            <i className="bi bi-eye"></i>
+                            <FaEye/>
                           </Link>
                           <Link 
                             to={`/edit-intervention/${intervention.id}`} 
                             className="btn btn-outline-warning btn-sm me-1"
                             title="Modifier"
                           >
-                            <i className="bi bi-pencil"></i>
+                           <FaPencil/>
                           </Link>
                           <button
                             className="btn btn-outline-danger btn-sm"
                             onClick={() => handleDelete(intervention.id)}
                             title="Supprimer"
                           >
-                            <i className="bi bi-trash"></i>
+                            <FaTrash/>
                           </button>
                         </div>
                       </td>
@@ -177,7 +209,7 @@ export default function InterventionList() {
             </table>
           </div>
           
-          {totalPages > 1 && (
+          {totalPages[0] > 1 && (
             <div className="d-flex justify-content-center mt-4">
               <nav aria-label="Navigation des pages">
                 <ul className="pagination">

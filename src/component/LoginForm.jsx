@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Auth } from "../api/api";
@@ -21,7 +22,7 @@ export function LoginForm() {
       console.log("Est authentifié:", Auth.isAuthenticated());
       
       // Redirection vers la page d'accueil après connexion réussie
-      navigate("/");
+      navigate("/vehicules");
     } catch (error) {
       console.error("Erreur de connexion:", error);
       if (error.response && error.response.data && error.response.data.message) {

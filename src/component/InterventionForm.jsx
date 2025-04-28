@@ -3,6 +3,31 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Intervention, Vehicule } from "../api/api";
 
 export default function InterventionForm() {
+  const natureIntervention = [
+    'maintenance',
+    'reparation',
+    'controle_technique',
+    'nettoyage',
+    'autre'
+  ];
+  
+  const faitGenerateur = [
+    'incident',
+    'usure',
+    'accident',
+    'controle_preventif',
+    'autre'
+  ];
+  
+  const detailFaitGenerateur = [
+    'frein',
+    'moteur',
+    'carrosserie',
+    'pneu',
+    'vidange',
+    'autre'
+  ];
+
   const { id } = useParams(); // Pour l'édition d'une intervention existante
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -15,10 +40,6 @@ export default function InterventionForm() {
     nature_intervention: "",
     fait_generateur: "",
     detail_fait_generateur: "",
-    date_intervention: "",
-    cout: "",
-    statut: "programmée",
-    notes: ""
   });
 
   useEffect(() => {
@@ -47,10 +68,7 @@ export default function InterventionForm() {
               nature_intervention: response.data.nature_intervention || "",
               fait_generateur: response.data.fait_generateur || "",
               detail_fait_generateur: response.data.detail_fait_generateur || "",
-              date_intervention: response.data.date_intervention || "",
-              cout: response.data.cout || "",
-              statut: response.data.statut || "programmée",
-              notes: response.data.notes || ""
+             
             });
           }
         } catch (error) {
@@ -93,10 +111,6 @@ export default function InterventionForm() {
           nature_intervention: "",
           fait_generateur: "",
           detail_fait_generateur: "",
-          date_intervention: "",
-          cout: "",
-          statut: "programmée",
-          notes: ""
         });
       }
     } catch (error) {
@@ -152,95 +166,59 @@ export default function InterventionForm() {
         
         <div className="mb-3">
           <label className="form-label">Nature de l'intervention</label>
-          <input
-            type="text"
+          <select
             name="nature_intervention"
             className="form-control"
             value={formData.nature_intervention}
             onChange={handleChange}
             disabled={loading}
             required
-          />
+          >
+            <option value="">Sélectionner la nature de l'intervention</option>
+           {natureIntervention.map((e) => (
+              <option key={e} value={e}>
+                {e}
+              </option>
+            ))}
+          </select>
         </div>
         
         <div className="mb-3">
           <label className="form-label">Fait générateur</label>
-          <input
-            type="text"
+          <select
             name="fait_generateur"
             className="form-control"
             value={formData.fait_generateur}
             onChange={handleChange}
             disabled={loading}
-            required
-          />
+            required >
+              <option value="">Sélectionner le fait générateur</option>
+             {faitGenerateur.map((e) => (
+              <option key={e} value={e}>
+                {e}
+              </option>
+            ))}
+          </select>
         </div>
-        
         <div className="mb-3">
           <label className="form-label">Détail du fait générateur</label>
-          <textarea
+          <select
             name="detail_fait_generateur"
-            className="form-control"
+            className="form-select"
             value={formData.detail_fait_generateur}
             onChange={handleChange}
             disabled={loading}
-            rows="3"
-            required
-          ></textarea>
-        </div>
-        
-        <div className="mb-3">
-          <label className="form-label">Date d'intervention</label>
-          <input
-            type="date"
-            name="date_intervention"
-            className="form-control"
-            value={formData.date_intervention}
-            onChange={handleChange}
-            disabled={loading}
-          />
-        </div>
-        
-        <div className="mb-3">
-          <label className="form-label">Coût</label>
-          <input
-            type="number"
-            name="cout"
-            className="form-control"
-            value={formData.cout}
-            onChange={handleChange}
-            disabled={loading}
-            step="0.01"
-          />
-        </div>
-        
-        <div className="mb-3">
-          <label className="form-label">Statut</label>
-          <select
-            name="statut"
-            className="form-select"
-            value={formData.statut}
-            onChange={handleChange}
-            disabled={loading}
           >
-            <option value="programmée">Programmée</option>
-            <option value="en_cours">En cours</option>
-            <option value="terminée">Terminée</option>
-            <option value="annulée">Annulée</option>
+            <option value="">Sélectionner le détail du fait générateur</option>
+             {detailFaitGenerateur.map((e) => (
+              <option key={e} value={e}>
+                {e}
+              </option>
+            ))}
           </select>
         </div>
         
-        <div className="mb-3">
-          <label className="form-label">Notes</label>
-          <textarea
-            name="notes"
-            className="form-control"
-            value={formData.notes}
-            onChange={handleChange}
-            disabled={loading}
-            rows="3"
-          ></textarea>
-        </div>
+        {}
         
         <div className="d-flex justify-content-between">
           <button

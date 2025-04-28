@@ -1,7 +1,10 @@
+import axios from 'axios';
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Vehicule } from "../api/api";
-
+import { FaEye, FaTractor } from 'react-icons/fa';
+import { FaPencil } from "react-icons/fa6";
+import { FaTrash } from "react-icons/fa";
 export default function VehicleList() {
   const [vehicules, setVehicules] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -14,12 +17,18 @@ export default function VehicleList() {
   async function fetchVehicules(page = 1) {
     try {
       setLoading(true);
-      const response = await Vehicule.fetchVehicules(page);
+      // Utilisez une méthode alternative pour éviter le problème de paramètre dupliqué
+      const url = `http://localhost:8000/api/vehicules?page=${page}`;
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       
-      if (response && response.data) {
-        setVehicules(response.data);
-        setTotalPages(response.meta.last_page);
-        setCurrentPage(response.meta.current_page);
+      if (response && response.data && response.data.data) {
+        setVehicules(response.data.data);
+        setTotalPages(response.data.meta.last_page);
+        // setCurrentPage(response.data.meta.current_page);;
       } else {
         setVehicules([]);
       }
@@ -27,7 +36,8 @@ export default function VehicleList() {
     } catch (error) {
       console.error("Erreur lors de la récupération des véhicules:", error);
       setError("Impossible de charger les véhicules. Veuillez réessayer plus tard.");
-    } finally {
+    }finally {
+
       setLoading(false);
     }
   }
@@ -36,7 +46,6 @@ export default function VehicleList() {
   useEffect(() => {
     fetchVehicules(currentPage);
   }, [currentPage]);
-
   // Fonction pour gérer la suppression d'un véhicule
   const handleDelete = async (id) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce véhicule ?")) {
@@ -68,13 +77,23 @@ export default function VehicleList() {
     setCurrentPage(page);
   };
 
+  // Fonction pour rafraîchir manuellement la liste
+  const handleRefresh = () => {
+    fetchVehicules(currentPage);
+  };
+
   return (
     <div className="container mt-5">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h3 className="mb-0">Liste des Véhicules</h3>
-        <Link to="/ajouter_vehicule" className="btn btn-primary">
-          <i className="bi bi-plus"></i> Nouveau Véhicule
-        </Link>
+        <div>
+          <button onClick={handleRefresh} className="btn btn-outline-secondary me-2">
+            <i className="bi bi-arrow-clockwise"></i> Actualiser
+          </button>
+          <Link to="/ajouter_vehicule" className="btn btn-primary">
+            <i className="bi bi-plus"></i> Nouveau Véhicule
+          </Link>
+        </div>
       </div>
       
       {successMessage && (
@@ -86,6 +105,12 @@ export default function VehicleList() {
       {error && (
         <div className="alert alert-danger" role="alert">
           {error}
+          <button 
+            className="btn btn-sm btn-outline-danger ms-3" 
+            onClick={handleRefresh}
+          >
+            Réessayer
+          </button>
         </div>
       )}
       
@@ -130,21 +155,21 @@ export default function VehicleList() {
                             className="btn btn-outline-info btn-sm me-1"
                             title="Voir les détails"
                           >
-                            <i className="bi bi-eye"></i>
+                            <FaEye/>
                           </Link>
                           <Link 
                             to={`/edit-vehicule/${vehicle.id}`} 
                             className="btn btn-outline-warning btn-sm me-1"
                             title="Modifier"
                           >
-                            <i className="bi bi-pencil"></i>
+                            <FaPencil/>
                           </Link>
                           <button
                             className="btn btn-outline-danger btn-sm"
                             onClick={() => handleDelete(vehicle.id)}
                             title="Supprimer"
                           >
-                            <i className="bi bi-trash"></i>
+                            <FaTrash/>
                           </button>
                         </div>
                       </td>
@@ -161,7 +186,7 @@ export default function VehicleList() {
             </table>
           </div>
           
-          {totalPages > 1 && (
+          {totalPages[0] > 1 && (
             <div className="d-flex justify-content-center mt-4">
               <nav aria-label="Navigation des pages">
                 <ul className="pagination">

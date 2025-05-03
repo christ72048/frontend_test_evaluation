@@ -68,7 +68,10 @@ export default function InterventionForm() {
               nature_intervention: response.data.nature_intervention || "",
               fait_generateur: response.data.fait_generateur || "",
               detail_fait_generateur: response.data.detail_fait_generateur || "",
-             
+              // date_intervention: response.data.date_intervention || "",
+              // cout: response.data.cout || "",
+              // statut: response.data.statut || "programmée",
+              // notes: response.data.notes || ""
             });
           }
         } catch (error) {
@@ -192,7 +195,7 @@ export default function InterventionForm() {
             onChange={handleChange}
             disabled={loading}
             required >
-              <option value="">Sélectionner le fait générateur</option>
+              <option value="">Sélectionner un fait générateur</option>
              {faitGenerateur.map((e) => (
               <option key={e} value={e}>
                 {e}
@@ -218,7 +221,58 @@ export default function InterventionForm() {
           </select>
         </div>
         
-        {}
+        {/* <div className="mb-3">
+          <label className="form-label">Date d'intervention</label>
+          <input
+            type="date"
+            name="date_intervention"
+            className="form-control"
+            value={formData.date_intervention}
+            onChange={handleChange}
+            disabled={loading}
+          />
+        </div>
+        
+        <div className="mb-3">
+          <label className="form-label">Coût</label>
+          <input
+            type="number"
+            name="cout"
+            className="form-control"
+            value={formData.cout}
+            onChange={handleChange}
+            disabled={loading}
+            step="0.01"
+          />
+        </div>
+        
+        <div className="mb-3">
+          <label className="form-label">Statut</label>
+          <select
+            name="statut"
+            className="form-select"
+            value={formData.statut}
+            onChange={handleChange}
+            disabled={loading}
+          >
+            <option value="programmée">Programmée</option>
+            <option value="en_cours">En cours</option>
+            <option value="terminée">Terminée</option>
+            <option value="annulée">Annulée</option>
+          </select>
+        </div>
+        
+        <div className="mb-3">
+          <label className="form-label">Notes</label>
+          <textarea
+            name="notes"
+            className="form-control"
+            value={formData.notes}
+            onChange={handleChange}
+            disabled={loading}
+            rows="3"
+          ></textarea>
+        </div> */}
         
         <div className="d-flex justify-content-between">
           <button

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Vehicule } from "../api/api";
+import { Vehicule, Auth } from "../api/api";
 import { FaEye, FaTractor } from 'react-icons/fa';
 import { FaPencil } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";

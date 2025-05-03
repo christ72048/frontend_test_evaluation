@@ -141,9 +141,8 @@ export default function InterventionList() {
                   <th>Véhicule</th>
                   <th>Nature</th>
                   <th>Fait générateur</th>
-                  <th>Date</th>
-                  <th>Statut</th>
-                  <th>Coût</th>
+                  
+                
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -159,18 +158,9 @@ export default function InterventionList() {
                       </td>
                       <td>{intervention.nature_intervention}</td>
                       <td>{intervention.fait_generateur}</td>
-                      <td>{formatDate(intervention.date_intervention)}</td>
-                      <td>
-                        <span className={`badge ${
-                          intervention.statut === 'terminée' ? 'bg-success' :
-                          intervention.statut === 'en_cours' ? 'bg-warning' :
-                          intervention.statut === 'programmée' ? 'bg-info' :
-                          'bg-secondary'
-                        }`}>
-                          {intervention.statut || 'Non défini'}
-                        </span>
-                      </td>
-                      <td>{intervention.cout ? `${intervention.cout} €` : '-'}</td>
+                      
+                      
+                      
                       <td>
                         <div className="btn-group" role="group">
                           <Link 
